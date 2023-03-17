@@ -12,8 +12,9 @@ class Handler(BaseHTTPRequestHandler):
         #response headers
         print(self.headers)
     def do_POST(self):
-        """Save a file following a HTTP PUT request"""
-        filename = os.path.basename(self.path)
+        filename = self.path.rsplit('/')[1]
+        if '?' in filename:
+            filename = filename.split('?')[0]
         # Don't overwrite files
         if os.path.exists(filename):
             self.send_response(409, 'Conflict')
@@ -22,6 +23,7 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(reply_body.encode('utf-8'))
             return
 
+        print(self.headers['Content-Length'])
         file_length = int(self.headers['Content-Length'])
         with open(filename, 'wb') as output_file:
             output_file.write(self.rfile.read(file_length))
